@@ -1,10 +1,8 @@
 package br.com.narigaz.restwithspringbootandjava.services;
 
 import br.com.narigaz.restwithspringbootandjava.data.vo.v1.PersonVO;
-import br.com.narigaz.restwithspringbootandjava.data.vo.v2.PersonVOV2;
 import br.com.narigaz.restwithspringbootandjava.exceptions.ResourceNotFoundException;
 import br.com.narigaz.restwithspringbootandjava.mapper.DozerMapper;
-import br.com.narigaz.restwithspringbootandjava.mapper.custom.PersonMapper;
 import br.com.narigaz.restwithspringbootandjava.model.Person;
 import br.com.narigaz.restwithspringbootandjava.repositories.PersonRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,12 +16,9 @@ import java.util.logging.Logger;
 public class PersonServices {
     PersonRepository repository;
 
-    PersonMapper personMapper;
-
     @Autowired
-    public PersonServices(PersonRepository repository, PersonMapper personMapper) {
+    public PersonServices(PersonRepository repository) {
         this.repository = repository;
-        this.personMapper = personMapper;
     }
 
     private final Logger logger = Logger.getLogger(PersonServices.class.getName());
@@ -71,12 +66,5 @@ public class PersonServices {
         repository.delete(entity);
 
         return ResponseEntity.noContent().build();
-    }
-
-    public PersonVOV2 createV2(PersonVOV2 person) {
-        logger.info("Creating one person with V2!");
-
-        var entity = personMapper.convertVoToEntity(person);
-        return personMapper.convertEntityToVo(repository.save(entity));
     }
 }
