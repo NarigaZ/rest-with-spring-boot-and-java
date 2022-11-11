@@ -175,5 +175,4 @@ public class PersonControllerJsonTest extends AbstractIntegrationTest {
         person.setAddress("New York City, New York, US");
         person.setGender("Male");
     }
-
 }
