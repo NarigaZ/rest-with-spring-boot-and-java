@@ -7,6 +7,7 @@ import br.com.narigaz.restwithspringbootandjava.exceptions.ResourceNotFoundExcep
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -49,10 +50,10 @@ public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExce
         return new ResponseEntity<>(exceptionResponse, HttpStatus.FORBIDDEN);
     }
 
-    @ExceptionHandler({ AuthenticationException.class })
+    @ExceptionHandler({ AuthenticationException.class , AccessDeniedException.class })
     @ResponseBody
-    public ResponseEntity<ExceptionResponse> handleAuthenticationException(Exception ex) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new ExceptionResponse(new Date(), ex.getMessage(), "Teste"));
+    public ResponseEntity<ExceptionResponse> handleAuthenticationException(Exception ex, WebRequest request) {
+        ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(), ex.getMessage(), request.getDescription(false));
+        return new ResponseEntity<>(exceptionResponse, HttpStatus.UNAUTHORIZED);
     }
 }

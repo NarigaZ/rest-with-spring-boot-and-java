@@ -1,6 +1,7 @@
 package br.com.narigaz.restwithspringbootandjava.config;
 
 import br.com.narigaz.restwithspringbootandjava.exceptions.CustomAuthenticationFailureHandler;
+import br.com.narigaz.restwithspringbootandjava.security.jwt.AccessDeniedExceptionFilter;
 import br.com.narigaz.restwithspringbootandjava.security.jwt.JwtTokenFilter;
 import br.com.narigaz.restwithspringbootandjava.security.jwt.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,13 +34,16 @@ public class SecurityConfig {
 
     private final JwtTokenProvider tokenProvider;
 
+    private final AccessDeniedExceptionFilter accessDeniedExceptionFilter;
+
     @Value("${cors.originPatterns:default}")
     private String corsOriginPatterns = "";
 
 
     @Autowired
-    public SecurityConfig(JwtTokenProvider tokenProvider) {
+    public SecurityConfig(JwtTokenProvider tokenProvider, AccessDeniedExceptionFilter accessDeniedExceptionFilter) {
         this.tokenProvider = tokenProvider;
+        this.accessDeniedExceptionFilter = accessDeniedExceptionFilter;
     }
 
     @Bean
@@ -52,24 +56,31 @@ public class SecurityConfig {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
+
     @Bean
     public SecurityFilterChain configure(HttpSecurity http) throws Exception {
 
-        http.sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and().csrf().disable()
-                .cors(withDefaults());
-
-        http.authorizeHttpRequests( (auth) -> auth
-                        .requestMatchers(HttpMethod.GET,"/v3/api-docs**").anonymous()
-                        .requestMatchers(HttpMethod.GET,"/swagger-ui/index.html").anonymous()
-                        .requestMatchers(HttpMethod.POST,"/auth/signin", "/auth/refresh" ).permitAll()
-                        .requestMatchers("/users").denyAll()
-                        .anyRequest().authenticated()
-                )
-                .httpBasic(withDefaults())
-                .exceptionHandling();
-
+        http.
+                csrf()
+                .disable()
+                .cors(withDefaults())
+                .authorizeHttpRequests()
+                .requestMatchers(HttpMethod.GET,"/v3/api-docs/**")
+                .permitAll()
+                .requestMatchers("/swagger-ui/**")
+                .permitAll()
+                .requestMatchers(HttpMethod.POST,"/auth/signin", "/auth/refresh")
+                .permitAll()
+                .requestMatchers("/users")
+                .denyAll()
+                .anyRequest()
+                .authenticated()
+                .and()
+                .exceptionHandling()
+                .accessDeniedHandler(accessDeniedExceptionFilter)
+                .and()
+                .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
         JwtTokenFilter customFilter = new JwtTokenFilter(tokenProvider);
         http.addFilterBefore(customFilter, UsernamePasswordAuthenticationFilter.class);
