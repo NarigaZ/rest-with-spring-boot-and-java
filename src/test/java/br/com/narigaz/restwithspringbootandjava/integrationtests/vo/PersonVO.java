@@ -1,8 +1,11 @@
 package br.com.narigaz.restwithspringbootandjava.integrationtests.vo;
 
+import jakarta.xml.bind.annotation.XmlRootElement;
+
 import java.io.Serializable;
 import java.util.Objects;
 
+@XmlRootElement(name="PersonVO")
 public class PersonVO implements Serializable {
 
     private long id;

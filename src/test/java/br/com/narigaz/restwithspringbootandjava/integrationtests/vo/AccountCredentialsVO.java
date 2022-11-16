@@ -1,19 +1,22 @@
-package br.com.narigaz.restwithspringbootandjava.data.vo.v1.security;
+package br.com.narigaz.restwithspringbootandjava.integrationtests.vo;
+
+import jakarta.xml.bind.annotation.XmlRootElement;
 
 import java.io.Serializable;
 import java.util.Objects;
 
+@XmlRootElement(name="AccountCredentialsVO")
 public class AccountCredentialsVO implements Serializable {
 
     private String username;
     private String password;
 
+    public AccountCredentialsVO() {
+    }
+
     public AccountCredentialsVO(String userName, String password) {
         this.username = userName;
         this.password = password;
-    }
-
-    public AccountCredentialsVO() {
     }
 
     public String getUsername() {
