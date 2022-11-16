@@ -13,6 +13,10 @@ import java.util.List;
 public class WebConfig implements WebMvcConfigurer {
 
     private static final MediaType MEDIA_TYPE_APPLICATION_YML = MediaType.valueOf("application/x-yaml");
+
+//    @Value("${cors.originPatterns:default}")
+//    private String corsOriginPatterns = "";
+
     @Override
     public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
         // https://www.baeldung.com/spring-mvc-content-negotiation-json-xml
@@ -42,4 +46,14 @@ public class WebConfig implements WebMvcConfigurer {
     public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
         converters.add(new YamlJackson2HttpMesageConverter());
     }
+
+//    @Override
+//    public void addCorsMappings(CorsRegistry registry) {
+//        var allowedOrigins = corsOriginPatterns.split(",");
+//        registry.addMapping("/**")
+//                .allowedMethods("GET", "POST", "PUT")
+//                .allowedMethods("*")
+//                .allowedOrigins(allowedOrigins)
+//                .allowCredentials(true);
+//    }
 }

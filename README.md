@@ -2,6 +2,7 @@
 
 Used: Java, Spring, MySql, JPA, Dozer, VO, Versioning, 
 Migration with Flyway, Content Negotiation with JSON - YAML - XML,
-ATEOAS - Mockito - JUnit 5 - Swagger - Integration Tests with TestContainers and Rest Assured
+HATEOAS, Mockito, JUnit 5, Swagger, Integration Tests with TestContainers and Rest Assured,
+Authentication with JWT and Spring Security
 
 Dev - Felipe Ferreira Rezende
