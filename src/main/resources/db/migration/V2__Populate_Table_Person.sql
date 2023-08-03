@@ -1,7 +1,5 @@
-/*!40000 ALTER TABLE `person` DISABLE KEYS */;
-INSERT INTO person VALUES (1,'Felipe','Rezende','Goiania','Male'),
-                            (3,'Natalia','Rezende','Goiania','Female'),
-                            (4,'Rafaela','Marques','Prata','Female'),
-                            (7,'Ayrton','Senna','São Paulo','Male'),
-                            (9,'Nelson','Mvezo','Mvezo - South Africa','Male');
-/*!40000 ALTER TABLE `person` ENABLE KEYS */;
+INSERT INTO person(first_name, last_name, address, gender) VALUES ('Felipe','Rezende','Goiania','Male'),
+                            ('Natalia','Rezende','Goiania','Female'),
+                            ('Rafaela','Marques','Prata','Female'),
+                            ('Ayrton','Senna','São Paulo','Male'),
+                            ('Nelson','Mvezo','Mvezo - South Africa','Male');

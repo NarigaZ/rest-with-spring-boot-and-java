@@ -9,10 +9,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
-public class SwaggerIntegrationTest extends AbstractIntegrationTest {
+class SwaggerIntegrationTest extends AbstractIntegrationTest {
 
     @Test
-    public void shouldDisplaySwaggerUiPage() {
+    void shouldDisplaySwaggerUiPage() {
         var content = given()
                 .basePath("swagger-ui/index.html")
                 .port(TestConfigs.SERVER_PORT)

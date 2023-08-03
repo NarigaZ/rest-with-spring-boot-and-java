@@ -40,13 +40,13 @@ public class PersonControllerXMLTest extends AbstractIntegrationTest {
 
     @Test
     @Order(0)
-    public void Authorization() {
+    void Authorization() {
         AccountCredentialsVO user = new AccountCredentialsVO("leandro", "admin123");
 
         var accessToken = given()
                 .basePath("auth/signin")
                 .port(TestConfigs.SERVER_PORT)
-                .contentType(TestConfigs.CONTENT_TYPE_JSON)
+                .contentType(TestConfigs.CONTENT_TYPE_XML)
                 .contentType(TestConfigs.CONTENT_TYPE_XML)
                 .body(user)
                     .when()
@@ -69,10 +69,10 @@ public class PersonControllerXMLTest extends AbstractIntegrationTest {
     }
     @Test
     @Order(1)
-    public void testCreate() {
+    void testCreate() {
         mockPerson();
         var content = given().spec(specification)
-                .contentType(TestConfigs.CONTENT_TYPE_JSON)
+                .contentType(TestConfigs.CONTENT_TYPE_XML)
                 .accept(TestConfigs.CONTENT_TYPE_XML)
                 .header(TestConfigs.HEADER_PARAM_ORIGIN, TestConfigs.ORIGIN_NARIGAZ)
                 .body(person)
@@ -89,6 +89,7 @@ public class PersonControllerXMLTest extends AbstractIntegrationTest {
         assertNotNull(content.getLastName());
         assertNotNull(content.getAddress());
         assertNotNull(content.getGender());
+        assertTrue(content.isEnabled());
 
         assertTrue(content.getId() > 0);
 
@@ -100,11 +101,11 @@ public class PersonControllerXMLTest extends AbstractIntegrationTest {
 
     @Test
     @Order(2)
-    public void testUpdate() {
+    void testUpdate() {
         person.setLastName("Piquet Maior");
 
         var content = given().spec(specification)
-                .contentType(TestConfigs.CONTENT_TYPE_JSON)
+                .contentType(TestConfigs.CONTENT_TYPE_XML)
                 .accept(TestConfigs.CONTENT_TYPE_XML)
                 .header(TestConfigs.HEADER_PARAM_ORIGIN, TestConfigs.ORIGIN_NARIGAZ)
                 .body(person)
@@ -123,6 +124,7 @@ public class PersonControllerXMLTest extends AbstractIntegrationTest {
         assertNotNull(content.getLastName());
         assertNotNull(content.getAddress());
         assertNotNull(content.getGender());
+        assertTrue(content.isEnabled());
 
         assertTrue(content.getId() > 0);
 
@@ -132,13 +134,44 @@ public class PersonControllerXMLTest extends AbstractIntegrationTest {
         assertEquals("Male", content.getGender());
     }
 
+
     @Test
     @Order(3)
-    public void testFindiById() {
+    void testDisableiById() {
+        var content = given().spec(specification)
+                .contentType(TestConfigs.CONTENT_TYPE_XML)
+                .accept(TestConfigs.CONTENT_TYPE_XML)
+                .header(TestConfigs.HEADER_PARAM_ORIGIN, TestConfigs.ORIGIN_NARIGAZ)
+                .pathParam("id", person.getId())
+                .when()
+                .patch("{id}")
+                .then()
+                .statusCode(200)
+                .extract()
+                .body()
+                .as(PersonVO.class);
+
+        assertNotNull(content);
+        assertNotNull(content.getFirstName());
+        assertNotNull(content.getLastName());
+        assertNotNull(content.getAddress());
+        assertNotNull(content.getGender());
+        assertFalse(content.isEnabled());
+
+        assertTrue(content.getId() > 0);
+
+        assertEquals("Nelson", content.getFirstName());
+        assertEquals("Piquet Maior", content.getLastName());
+        assertEquals("New York City, New York, US", content.getAddress());
+        assertEquals("Male", content.getGender());
+    }
+    @Test
+    @Order(4)
+    void testFindiById() {
         mockPerson();
 
         var content = given().spec(specification)
-                .contentType(TestConfigs.CONTENT_TYPE_JSON)
+                .contentType(TestConfigs.CONTENT_TYPE_XML)
                 .accept(TestConfigs.CONTENT_TYPE_XML)
                 .header(TestConfigs.HEADER_PARAM_ORIGIN, TestConfigs.ORIGIN_NARIGAZ)
                     .pathParam("id", person.getId())
@@ -155,6 +188,7 @@ public class PersonControllerXMLTest extends AbstractIntegrationTest {
         assertNotNull(content.getLastName());
         assertNotNull(content.getAddress());
         assertNotNull(content.getGender());
+        assertFalse(content.isEnabled());
 
         assertTrue(content.getId() > 0);
 
@@ -165,8 +199,8 @@ public class PersonControllerXMLTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @Order(4)
-    public void testDelete() {
+    @Order(5)
+    void testDelete() {
         given().spec(specification)
                 .pathParam("id", person.getId())
                 .when()
@@ -176,10 +210,10 @@ public class PersonControllerXMLTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @Order(5)
-    public void testFindAll() throws JsonProcessingException {
+    @Order(6)
+    void testFindAll() throws JsonProcessingException {
         var content = given().spec(specification)
-                .contentType(TestConfigs.CONTENT_TYPE_JSON)
+                .contentType(TestConfigs.CONTENT_TYPE_XML)
                 .accept(TestConfigs.CONTENT_TYPE_XML)
                 .when()
                     .get()
@@ -197,6 +231,7 @@ public class PersonControllerXMLTest extends AbstractIntegrationTest {
         assertNotNull(foundPersonOne.getLastName());
         assertNotNull(foundPersonOne.getAddress());
         assertNotNull(foundPersonOne.getGender());
+        assertTrue(foundPersonOne.isEnabled());
 
         assertEquals(1,foundPersonOne.getId());
 
@@ -212,8 +247,9 @@ public class PersonControllerXMLTest extends AbstractIntegrationTest {
         assertNotNull(foundPersonFour.getLastName());
         assertNotNull(foundPersonFour.getAddress());
         assertNotNull(foundPersonFour.getGender());
+        assertTrue(foundPersonFour.isEnabled());
 
-        assertEquals(9,foundPersonFour.getId());
+        assertEquals(5,foundPersonFour.getId());
 
         assertEquals("Nelson", foundPersonFour.getFirstName());
         assertEquals("Mvezo", foundPersonFour.getLastName());
@@ -222,8 +258,8 @@ public class PersonControllerXMLTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @Order(5)
-    public void testFindAllWithoutToken() {
+    @Order(7)
+    void testFindAllWithoutToken() {
 
         var specification = new RequestSpecBuilder()
                 .setBasePath("/api/v1/person")
@@ -233,7 +269,7 @@ public class PersonControllerXMLTest extends AbstractIntegrationTest {
                 .build();
 
          given().spec(specification)
-                .contentType(TestConfigs.CONTENT_TYPE_JSON)
+                .contentType(TestConfigs.CONTENT_TYPE_XML)
                 .when()
                 .get()
                 .then()
@@ -245,5 +281,6 @@ public class PersonControllerXMLTest extends AbstractIntegrationTest {
         person.setLastName("Ferrer");
         person.setAddress("New York City, New York, US");
         person.setGender("Male");
+        person.setEnabled(true);
     }
 }

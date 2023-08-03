@@ -43,69 +43,69 @@ public class BookControllerYamlTest extends AbstractIntegrationTest {
         objectMapper = new YMLMapper();
         book = new BookVO();
     }
-    
+
     @Test
     @Order(1)
-    public void authorization() {
+    void authorization() {
         AccountCredentialsVO user = new AccountCredentialsVO();
         user.setUsername("leandro");
         user.setPassword("admin123");
 
         var token =
                 given()
-                    .config(
-                        RestAssuredConfig
-                            .config()
-                            .encoderConfig(EncoderConfig.encoderConfig()
-                                    .encodeContentTypeAs(TestConfigs.CONTENT_TYPE_YML, ContentType.TEXT)))
-                    .basePath("/auth/signin")
-                    .port(TestConfigs.SERVER_PORT)
-                    .contentType(TestConfigs.CONTENT_TYPE_YML)
-    				.accept(TestConfigs.CONTENT_TYPE_YML)
-                    .body(user, objectMapper)
-                    .when()
+                        .config(
+                                RestAssuredConfig
+                                        .config()
+                                        .encoderConfig(EncoderConfig.encoderConfig()
+                                                .encodeContentTypeAs(TestConfigs.CONTENT_TYPE_YML, ContentType.TEXT)))
+                        .basePath("/auth/signin")
+                        .port(TestConfigs.SERVER_PORT)
+                        .contentType(TestConfigs.CONTENT_TYPE_YML)
+                        .accept(TestConfigs.CONTENT_TYPE_YML)
+                        .body(user, objectMapper)
+                        .when()
                         .post()
-                    .then()
+                        .then()
                         .statusCode(200)
-                    .extract()
-                    .body()
+                        .extract()
+                        .body()
                         .as(TokenVO.class, objectMapper)
-                    .getAccessToken();
+                        .getAccessToken();
 
-            specification =
+        specification =
                 new RequestSpecBuilder()
-                    .addHeader(TestConfigs.HEADER_PARAM_AUTHORIZATION, "Bearer " + token)
-                    .setBasePath("/api/v1/book")
-                    .setPort(TestConfigs.SERVER_PORT)
-                    .addFilter(new RequestLoggingFilter(LogDetail.ALL))
-                    .addFilter(new ResponseLoggingFilter(LogDetail.ALL))
-                    .build();
+                        .addHeader(TestConfigs.HEADER_PARAM_AUTHORIZATION, "Bearer " + token)
+                        .setBasePath("/api/v1/book")
+                        .setPort(TestConfigs.SERVER_PORT)
+                        .addFilter(new RequestLoggingFilter(LogDetail.ALL))
+                        .addFilter(new ResponseLoggingFilter(LogDetail.ALL))
+                        .build();
     }
-      
+
     @Test
     @Order(2)
-    public void testCreate() {
-        
+    void testCreate() {
+
         mockBook();
 
         book = given()
-                    .config(
+                .config(
                         RestAssuredConfig
-                            .config()
-                            .encoderConfig(EncoderConfig.encoderConfig()
-                                    .encodeContentTypeAs(TestConfigs.CONTENT_TYPE_YML, ContentType.TEXT)))
-                    .spec(specification)
+                                .config()
+                                .encoderConfig(EncoderConfig.encoderConfig()
+                                        .encodeContentTypeAs(TestConfigs.CONTENT_TYPE_YML, ContentType.TEXT)))
+                .spec(specification)
                 .contentType(TestConfigs.CONTENT_TYPE_YML)
-				.accept(TestConfigs.CONTENT_TYPE_YML)
-                    .body(book, objectMapper)
-                    .when()
-                    .post()
+                .accept(TestConfigs.CONTENT_TYPE_YML)
+                .body(book, objectMapper)
+                .when()
+                .post()
                 .then()
-                    .statusCode(200)
-                        .extract()
-                        .body()
-                            .as(BookVO.class, objectMapper);
-        
+                .statusCode(200)
+                .extract()
+                .body()
+                .as(BookVO.class, objectMapper);
+
         assertNotNull(book.getId());
         assertNotNull(book.getTitle());
         assertNotNull(book.getAuthor());
@@ -115,31 +115,31 @@ public class BookControllerYamlTest extends AbstractIntegrationTest {
         assertEquals("Nigel Poulton", book.getAuthor());
         assertEquals(55.99, book.getPrice());
     }
-      
+
     @Test
     @Order(3)
-    public void testUpdate() {
-        
+    void testUpdate() {
+
         book.setTitle("Docker Deep Dive - Updated");
 
         BookVO bookUpdated = given()
-                    .config(
+                .config(
                         RestAssuredConfig
-                            .config()
-                            .encoderConfig(EncoderConfig.encoderConfig()
-                                    .encodeContentTypeAs(TestConfigs.CONTENT_TYPE_YML, ContentType.TEXT)))
-                    .spec(specification)
+                                .config()
+                                .encoderConfig(EncoderConfig.encoderConfig()
+                                        .encodeContentTypeAs(TestConfigs.CONTENT_TYPE_YML, ContentType.TEXT)))
+                .spec(specification)
                 .contentType(TestConfigs.CONTENT_TYPE_YML)
-				.accept(TestConfigs.CONTENT_TYPE_YML)
-                    .body(book, objectMapper)
-                    .when()
-                    .put()
+                .accept(TestConfigs.CONTENT_TYPE_YML)
+                .body(book, objectMapper)
+                .when()
+                .put()
                 .then()
-                    .statusCode(200)
-                        .extract()
-                        .body()
-                        .as(BookVO.class, objectMapper);
-        
+                .statusCode(200)
+                .extract()
+                .body()
+                .as(BookVO.class, objectMapper);
+
         assertNotNull(bookUpdated.getId());
         assertNotNull(bookUpdated.getTitle());
         assertNotNull(bookUpdated.getAuthor());
@@ -152,25 +152,25 @@ public class BookControllerYamlTest extends AbstractIntegrationTest {
 
     @Test
     @Order(4)
-    public void testFindById() {
+    void testFindById() {
         var foundBook = given()
-                    .config(
+                .config(
                         RestAssuredConfig
-                            .config()
-                            .encoderConfig(EncoderConfig.encoderConfig()
-                                    .encodeContentTypeAs(TestConfigs.CONTENT_TYPE_YML, ContentType.TEXT)))
-                    .spec(specification)
+                                .config()
+                                .encoderConfig(EncoderConfig.encoderConfig()
+                                        .encodeContentTypeAs(TestConfigs.CONTENT_TYPE_YML, ContentType.TEXT)))
+                .spec(specification)
                 .contentType(TestConfigs.CONTENT_TYPE_YML)
-				.accept(TestConfigs.CONTENT_TYPE_YML)
-                    .pathParam("id", book.getId())
-                    .when()
-                    .get("{id}")
+                .accept(TestConfigs.CONTENT_TYPE_YML)
+                .pathParam("id", book.getId())
+                .when()
+                .get("{id}")
                 .then()
-                    .statusCode(200)
-                        .extract()
-                        .body()
-                        .as(BookVO.class, objectMapper);
-        
+                .statusCode(200)
+                .extract()
+                .body()
+                .as(BookVO.class, objectMapper);
+
         assertNotNull(foundBook.getId());
         assertNotNull(foundBook.getTitle());
         assertNotNull(foundBook.getAuthor());
@@ -180,51 +180,51 @@ public class BookControllerYamlTest extends AbstractIntegrationTest {
         assertEquals("Nigel Poulton", foundBook.getAuthor());
         assertEquals(55.99, foundBook.getPrice());
     }
-    
+
     @Test
     @Order(5)
-    public void testDelete() {
+    void testDelete() {
         given()
-            .config(
-                RestAssuredConfig
-                    .config()
-                    .encoderConfig(EncoderConfig.encoderConfig()
-                            .encodeContentTypeAs(TestConfigs.CONTENT_TYPE_YML, ContentType.TEXT)))
-            .spec(specification)
+                .config(
+                        RestAssuredConfig
+                                .config()
+                                .encoderConfig(EncoderConfig.encoderConfig()
+                                        .encodeContentTypeAs(TestConfigs.CONTENT_TYPE_YML, ContentType.TEXT)))
+                .spec(specification)
                 .contentType(TestConfigs.CONTENT_TYPE_YML)
-				.accept(TestConfigs.CONTENT_TYPE_YML)
-                    .pathParam("id", book.getId())
-                    .when()
-                    .delete("{id}")
+                .accept(TestConfigs.CONTENT_TYPE_YML)
+                .pathParam("id", book.getId())
+                .when()
+                .delete("{id}")
                 .then()
-                    .statusCode(204);
+                .statusCode(204);
     }
-    
+
     @Test
     @Order(6)
-    public void testFindAll() {
+    void testFindAll() {
         var response = given()
-                    .config(
+                .config(
                         RestAssuredConfig
-                            .config()
-                            .encoderConfig(EncoderConfig.encoderConfig()
-                                    .encodeContentTypeAs(TestConfigs.CONTENT_TYPE_YML, ContentType.TEXT)))
-                    .spec(specification)
+                                .config()
+                                .encoderConfig(EncoderConfig.encoderConfig()
+                                        .encodeContentTypeAs(TestConfigs.CONTENT_TYPE_YML, ContentType.TEXT)))
+                .spec(specification)
                 .contentType(TestConfigs.CONTENT_TYPE_YML)
-				.accept(TestConfigs.CONTENT_TYPE_YML)
-                    .when()
-                    .get()
+                .accept(TestConfigs.CONTENT_TYPE_YML)
+                .when()
+                .get()
                 .then()
-                    .statusCode(200)
-                        .extract()
-                        .body()
-                        .as(BookVO[].class, objectMapper); 
+                .statusCode(200)
+                .extract()
+                .body()
+                .as(BookVO[].class, objectMapper);
 
 
         List<BookVO> content = Arrays.asList(response);
 
         BookVO foundBookOne = content.get(0);
-        
+
         assertNotNull(foundBookOne.getId());
         assertNotNull(foundBookOne.getTitle());
         assertNotNull(foundBookOne.getAuthor());
@@ -233,9 +233,9 @@ public class BookControllerYamlTest extends AbstractIntegrationTest {
         assertEquals("Working effectively with legacy code", foundBookOne.getTitle());
         assertEquals("Michael C. Feathers", foundBookOne.getAuthor());
         assertEquals(49.00, foundBookOne.getPrice());
-        
+
         BookVO foundBookFive = content.get(4);
-        
+
         assertNotNull(foundBookFive.getId());
         assertNotNull(foundBookFive.getTitle());
         assertNotNull(foundBookFive.getAuthor());
@@ -245,7 +245,7 @@ public class BookControllerYamlTest extends AbstractIntegrationTest {
         assertEquals("Steve McConnell", foundBookFive.getAuthor());
         assertEquals(58.0, foundBookFive.getPrice());
     }
-     
+
     private void mockBook() {
         book.setTitle("Docker Deep Dive");
         book.setAuthor("Nigel Poulton");

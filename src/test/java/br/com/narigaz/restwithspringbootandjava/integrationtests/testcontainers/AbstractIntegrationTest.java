@@ -16,10 +16,18 @@ import java.util.stream.Stream;
 public class AbstractIntegrationTest {
     static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 //        static MySQLContainer<?> mysql = new MySQLContainer<>("mysql:8.0.31");
-        static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:11.1");
+        static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15");
 
         private static void startContainers() {
             Startables.deepStart(Stream.of(postgres)).join();
+        }
+
+        private static Map<String, String> createConnectionConfiguration() {
+            return Map.of(
+                    "spring.datasource.url", postgres.getJdbcUrl(),
+                    "spring.datasource.username", postgres.getUsername(),
+                    "spring.datasource.password", postgres.getPassword()
+            );
         }
 
         @SuppressWarnings({"unchecked","rawtypes"})
@@ -29,14 +37,6 @@ public class AbstractIntegrationTest {
             ConfigurableEnvironment environment = applicationContext.getEnvironment();
             MapPropertySource testContainers = new MapPropertySource("testContainers", (Map) createConnectionConfiguration());
             environment.getPropertySources().addFirst(testContainers);
-        }
-
-        private static Map<String, String> createConnectionConfiguration() {
-            return Map.of(
-                    "spring.datasource.url", postgres.getJdbcUrl(),
-                    "spring.datasource.username", postgres.getUsername(),
-                    "spring.datasource.password", postgres.getPassword()
-                    );
         }
     }
 }

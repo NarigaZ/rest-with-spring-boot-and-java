@@ -7,9 +7,12 @@ import br.com.narigaz.restwithspringbootandjava.integrationtests.vo.AccountCrede
 import br.com.narigaz.restwithspringbootandjava.integrationtests.vo.PersonVO;
 import br.com.narigaz.restwithspringbootandjava.integrationtests.vo.TokenVO;
 import io.restassured.builder.RequestSpecBuilder;
+import io.restassured.config.EncoderConfig;
+import io.restassured.config.RestAssuredConfig;
 import io.restassured.filter.log.LogDetail;
 import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
+import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -29,7 +32,7 @@ public class PersonControllerYamlTest extends AbstractIntegrationTest {
     private static PersonVO person;
 
     @BeforeAll
-    public static void setUp(){
+    public static void setUp() {
         objectMapper = new YMLMapper();
 
         person = new PersonVO();
@@ -37,23 +40,28 @@ public class PersonControllerYamlTest extends AbstractIntegrationTest {
 
     @Test
     @Order(0)
-    public void Authorization() {
+    void Authorization() {
         AccountCredentialsVO user = new AccountCredentialsVO("leandro", "admin123");
 
         var accessToken = given()
+                .config(
+                        RestAssuredConfig
+                                .config()
+                                .encoderConfig(EncoderConfig.encoderConfig()
+                                        .encodeContentTypeAs(TestConfigs.CONTENT_TYPE_YML, ContentType.TEXT)))
                 .basePath("auth/signin")
                 .port(TestConfigs.SERVER_PORT)
-                .contentType(TestConfigs.CONTENT_TYPE_JSON)
+                .contentType(TestConfigs.CONTENT_TYPE_YML)
                 .accept(TestConfigs.CONTENT_TYPE_YML)
-                .body(user)
-                    .when()
+                .body(user, objectMapper)
+                .when()
                 .post()
-                    .then()
-                        .statusCode(200)
-                            .extract()
-                                .body()
-                                .as(TokenVO.class, objectMapper)
-                                .getAccessToken();
+                .then()
+                .statusCode(200)
+                .extract()
+                .body()
+                .as(TokenVO.class, objectMapper)
+                .getAccessToken();
 
         specification = new RequestSpecBuilder()
                 .addHeader(TestConfigs.HEADER_PARAM_AUTHORIZATION, "Bearer " + accessToken)
@@ -64,28 +72,36 @@ public class PersonControllerYamlTest extends AbstractIntegrationTest {
                 .build();
 
     }
+
     @Test
     @Order(1)
-    public void testCreate() {
+    void testCreate() {
         mockPerson();
-        var content = given().spec(specification)
-                .contentType(TestConfigs.CONTENT_TYPE_JSON)
+        var content = given()
+                .config(
+                        RestAssuredConfig
+                                .config()
+                                .encoderConfig(EncoderConfig.encoderConfig()
+                                        .encodeContentTypeAs(TestConfigs.CONTENT_TYPE_YML, ContentType.TEXT)))
+                .spec(specification)
+                .contentType(TestConfigs.CONTENT_TYPE_YML)
                 .accept(TestConfigs.CONTENT_TYPE_YML)
                 .header(TestConfigs.HEADER_PARAM_ORIGIN, TestConfigs.ORIGIN_NARIGAZ)
-                .body(person)
+                .body(person, objectMapper)
                 .when()
-                    .post()
+                .post()
                 .then()
-                    .statusCode(200)
+                .statusCode(200)
                 .extract()
-                    .body()
-                            .as(PersonVO.class, objectMapper);
+                .body()
+                .as(PersonVO.class, objectMapper);
 
         assertNotNull(content);
         assertNotNull(content.getFirstName());
         assertNotNull(content.getLastName());
         assertNotNull(content.getAddress());
         assertNotNull(content.getGender());
+        assertTrue(content.isEnabled());
 
         assertTrue(content.getId() > 0);
 
@@ -97,14 +113,20 @@ public class PersonControllerYamlTest extends AbstractIntegrationTest {
 
     @Test
     @Order(2)
-    public void testUpdate() {
+    void testUpdate() {
         person.setLastName("Piquet Maior");
 
-        var content = given().spec(specification)
-                .contentType(TestConfigs.CONTENT_TYPE_JSON)
+        var content = given()
+                .config(
+                        RestAssuredConfig
+                                .config()
+                                .encoderConfig(EncoderConfig.encoderConfig()
+                                        .encodeContentTypeAs(TestConfigs.CONTENT_TYPE_YML, ContentType.TEXT)))
+                .spec(specification)
+                .contentType(TestConfigs.CONTENT_TYPE_YML)
                 .accept(TestConfigs.CONTENT_TYPE_YML)
                 .header(TestConfigs.HEADER_PARAM_ORIGIN, TestConfigs.ORIGIN_NARIGAZ)
-                .body(person)
+                .body(person, objectMapper)
                 .when()
                 .post()
                 .then()
@@ -120,6 +142,7 @@ public class PersonControllerYamlTest extends AbstractIntegrationTest {
         assertNotNull(content.getLastName());
         assertNotNull(content.getAddress());
         assertNotNull(content.getGender());
+        assertTrue(content.isEnabled());
 
         assertTrue(content.getId() > 0);
 
@@ -131,27 +154,32 @@ public class PersonControllerYamlTest extends AbstractIntegrationTest {
 
     @Test
     @Order(3)
-    public void testFindiById() {
-        mockPerson();
-
-        var content = given().spec(specification)
-                .contentType(TestConfigs.CONTENT_TYPE_JSON)
+    void testDisableById() {
+        var content = given()
+                .config(
+                        RestAssuredConfig
+                                .config()
+                                .encoderConfig(EncoderConfig.encoderConfig()
+                                        .encodeContentTypeAs(TestConfigs.CONTENT_TYPE_YML, ContentType.TEXT)))
+                .spec(specification)
+                .contentType(TestConfigs.CONTENT_TYPE_YML)
                 .accept(TestConfigs.CONTENT_TYPE_YML)
                 .header(TestConfigs.HEADER_PARAM_ORIGIN, TestConfigs.ORIGIN_NARIGAZ)
-                    .pathParam("id", person.getId())
+                .pathParam("id", person.getId())
                 .when()
-                    .get("{id}")
+                .patch("{id}")
                 .then()
-                    .statusCode(200)
-                        .extract()
-                            .body()
-                                .as(PersonVO.class, objectMapper);
+                .statusCode(200)
+                .extract()
+                .body()
+                .as(PersonVO.class, objectMapper);
 
         assertNotNull(content);
         assertNotNull(content.getFirstName());
         assertNotNull(content.getLastName());
         assertNotNull(content.getAddress());
         assertNotNull(content.getGender());
+        assertFalse(content.isEnabled());
 
         assertTrue(content.getId() > 0);
 
@@ -163,27 +191,72 @@ public class PersonControllerYamlTest extends AbstractIntegrationTest {
 
     @Test
     @Order(4)
-    public void testDelete() {
-        given().spec(specification)
+    void testFindiById() {
+        mockPerson();
+
+        var content = given()
+                .config(
+                        RestAssuredConfig
+                                .config()
+                                .encoderConfig(EncoderConfig.encoderConfig()
+                                        .encodeContentTypeAs(TestConfigs.CONTENT_TYPE_YML, ContentType.TEXT)))
+                .spec(specification)
+                .contentType(TestConfigs.CONTENT_TYPE_YML)
+                .accept(TestConfigs.CONTENT_TYPE_YML)
+                .header(TestConfigs.HEADER_PARAM_ORIGIN, TestConfigs.ORIGIN_NARIGAZ)
                 .pathParam("id", person.getId())
                 .when()
-                    .delete("{id}")
+                .get("{id}")
                 .then()
-                    .statusCode(204);
+                .statusCode(200)
+                .extract()
+                .body()
+                .as(PersonVO.class, objectMapper);
+
+        assertNotNull(content);
+        assertNotNull(content.getFirstName());
+        assertNotNull(content.getLastName());
+        assertNotNull(content.getAddress());
+        assertNotNull(content.getGender());
+        assertFalse(content.isEnabled());
+
+        assertTrue(content.getId() > 0);
+
+        assertEquals("Nelson", content.getFirstName());
+        assertEquals("Piquet Maior", content.getLastName());
+        assertEquals("New York City, New York, US", content.getAddress());
+        assertEquals("Male", content.getGender());
     }
 
     @Test
     @Order(5)
-    public void testFindAll() {
-        var content = given().spec(specification)
-                .contentType(TestConfigs.CONTENT_TYPE_JSON)
+    void testDelete() {
+        given().spec(specification)
+                .pathParam("id", person.getId())
+                .when()
+                .delete("{id}")
+                .then()
+                .statusCode(204);
+    }
+
+    @Test
+    @Order(6)
+    void testFindAll() {
+        var content = given()
+                .config(
+                        RestAssuredConfig
+                                .config()
+                                .encoderConfig(EncoderConfig.encoderConfig()
+                                        .encodeContentTypeAs(TestConfigs.CONTENT_TYPE_YML, ContentType.TEXT)))
+                .spec(specification)
+                .contentType(TestConfigs.CONTENT_TYPE_YML)
                 .accept(TestConfigs.CONTENT_TYPE_YML)
                 .when()
-                    .get()
+                .get()
                 .then()
-                    .statusCode(200)
-                        .extract()
-                            .body()
+                .statusCode(200)
+                .extract()
+                .body()
                 .as(PersonVO[].class, objectMapper);
 
         List<PersonVO> people = Arrays.stream(content).toList();
@@ -195,8 +268,9 @@ public class PersonControllerYamlTest extends AbstractIntegrationTest {
         assertNotNull(foundPersonOne.getLastName());
         assertNotNull(foundPersonOne.getAddress());
         assertNotNull(foundPersonOne.getGender());
+        assertTrue(foundPersonOne.isEnabled());
 
-        assertEquals(1,foundPersonOne.getId());
+        assertEquals(1, foundPersonOne.getId());
 
         assertEquals("Felipe", foundPersonOne.getFirstName());
         assertEquals("Rezende", foundPersonOne.getLastName());
@@ -210,8 +284,9 @@ public class PersonControllerYamlTest extends AbstractIntegrationTest {
         assertNotNull(foundPersonFour.getLastName());
         assertNotNull(foundPersonFour.getAddress());
         assertNotNull(foundPersonFour.getGender());
+        assertTrue(foundPersonFour.isEnabled());
 
-        assertEquals(9,foundPersonFour.getId());
+        assertEquals(5, foundPersonFour.getId());
 
         assertEquals("Nelson", foundPersonFour.getFirstName());
         assertEquals("Mvezo", foundPersonFour.getLastName());
@@ -220,8 +295,8 @@ public class PersonControllerYamlTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @Order(5)
-    public void testFindAllWithoutToken() {
+    @Order(7)
+    void testFindAllWithoutToken() {
         var specification = new RequestSpecBuilder()
                 .setBasePath("/api/v1/person")
                 .setPort(TestConfigs.SERVER_PORT)
@@ -229,8 +304,8 @@ public class PersonControllerYamlTest extends AbstractIntegrationTest {
                 .addFilter(new ResponseLoggingFilter(LogDetail.ALL))
                 .build();
 
-         given().spec(specification)
-                .contentType(TestConfigs.CONTENT_TYPE_JSON)
+        given().spec(specification)
+                .contentType(TestConfigs.CONTENT_TYPE_YML)
                 .when()
                 .get()
                 .then()
@@ -242,5 +317,6 @@ public class PersonControllerYamlTest extends AbstractIntegrationTest {
         person.setLastName("Ferrer");
         person.setAddress("New York City, New York, US");
         person.setGender("Male");
+        person.setEnabled(true);
     }
 }
